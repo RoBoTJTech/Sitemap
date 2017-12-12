@@ -4,7 +4,7 @@
  * Copying and distribution of this file, with or without modification,
  * are permitted in any medium without royalty provided the copyright
  * notice and this notice are preserved including information about me
- * and my site http://www.thejohnnyoshow.com/coding-corner.html :-)
+ * and my site http://www.thejohnnyoshow.com :-)
  * This file is offered as-is, without any warranty.
  *
  * This software is free to use and alter as you need, however please don't
@@ -19,17 +19,17 @@
  * so that all the urls that are spidered are displayed in your browser like this
  * http://YOURDOMAIN/YOURPATH/sitemap.php?show_progress=1
  *
- * Or you can set you a cronjob once a week using something  
+ * Or you can set you a cronjob once a week using something
  * like * * * * 0 * wget -q http://YOURDOMAIN/YOURPATH/sitemap.php
  */
 
 // ------------ Configure below this line ----------------
-$domain = "www.thejohnnyoshow.com";
+$domain = "www.robotjmedia.com";
 $protocol = 'http';
 $changefreq = "weekly"; // options are: always,hourly,daily,weekly,monthly,yearly,never
 $priority = 1; // 0.0-1.0
-$saveas = '../sitemap.xml';
-$robots = '../robots.txt';
+$saveas = '/home/robotjtech/public_html/robotjmedia.com/sitemap.xml';
+$robots = '/home/robotjtech/public_html/robotjmedia.com/robots.txt';
 $sitemapURL = $protocol.'://'.$domain.'/sitemap.xml';
 
 // ------------ End of configuration ----------------------
@@ -59,44 +59,43 @@ function spider($spiderurl) {
 	global $priority;
 	global $changefreq;
 	global $lastmod;
-	
-	$input = @file_get_contents ( $spiderurl ) or die ( "Could not access file: $spiderurl" );
+        global $counter;
+	$input = @file_get_contents ( $spiderurl ); // or die ( "Could not access file: $spiderurl" );
 	$input = preg_replace ( '/\s+/', ' ', trim ( $input ) );
 	fixAmps ( $input, 0 );
 	$doc = new DOMDocument ();
 	libxml_use_internal_errors ( true );
 	$doc->loadHTML ( $input );
 	libxml_clear_errors ();
-	
+
 	$arr = $doc->getElementsByTagName ( "a" );
-	
+
 	foreach ( $arr as $item ) {
 		$href = $item->getAttribute ( "href" );
-		
 		$url = parse_url ( $href );
 		if ((($url ['scheme'] == 'http' || $url ['scheme'] == 'https') && $url ['host'] == $domain) || $url ['scheme'] == '') {
 			if (! $url ['host'])
 				$href = $protocol . "://" . $domain . "/" . $href;
-			
 			$skiphash = 'a' . hash ( 'sha512', $url ['path'] . $url ['query'] );
-			
+
 			if (! $skip [$skiphash]) {
+				$counter++;
 				$sitemap .= "<url>\n<loc>\n" . htmlentities ( $href ) . "\n</loc>\n<lastmod>\n$lastmod\n</lastmod>\n<priority>\n$priority\n</priority>\n<changefreq>\n$changefreq\n</changefreq>\n";
 				$arr2 = $doc->getElementsByTagName ( "img" );
 				if ($_GET ['show_progress'])
 					echo "$href\n";
 				foreach ( $arr2 as $item ) {
 					$img = $item->getAttribute ( "src" );
-					
+
 					$alt = $item->getAttribute ( "alt" );
 					$title = $item->getAttribute ( "title" );
 					$url = parse_url ( $img );
 					if ((($url ['scheme'] == 'http' || $url ['scheme'] == 'https') && $url ['host'] == $domain) || $url ['scheme'] == '') {
 						if (! $url ['host'])
 							$img = $protocol . "://" . $domain . "/" . $img;
-						
+
 						$skiphash2 = 'a' . hash ( 'sha512', $url ['path'] . $url ['query'] );
-						
+
 						if (! $skip [$skiphash2]) {
 							if ($_GET ['show_progress'])
 								echo "   $img\r";
@@ -113,12 +112,12 @@ function spider($spiderurl) {
 				$sitemap .= "</url>\n";
 				$spider_next = 1;
 			}
-			
+
 			$skip [$skiphash] = 1;
-			
-			if ($spider_next)
+                         
+			if ($spider_next && $counter<1000)
 				spider ( $href );
-			
+
 			$spider_next = 0;
 		}
 	}
@@ -129,9 +128,9 @@ file_put_contents ( $saveas, $sitemap );
 function fixAmps(&$html, $offset) {
 	$positionAmp = strpos ( $html, '&', $offset );
 	$positionSemiColumn = strpos ( $html, ';', $positionAmp + 1 );
-	
+
 	$string = substr ( $html, $positionAmp, $positionSemiColumn - $positionAmp + 1 );
-	
+
 	if ($positionAmp !== false) { // If an '&' can be found.
 		if ($positionSemiColumn === false) { // If no ';' can be found.
 			$html = substr_replace ( $html, '&amp;', $positionAmp, 1 ); // Replace straight away.
