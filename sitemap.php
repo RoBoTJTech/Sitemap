@@ -24,12 +24,12 @@
  */
 
 // ------------ Configure below this line ----------------
-$domain = "www.robotjmedia.com";
+$domain = "www.thejohnnyoshow.com";
 $protocol = 'http';
 $changefreq = "weekly"; // options are: always,hourly,daily,weekly,monthly,yearly,never
 $priority = 1; // 0.0-1.0
-$saveas = '/home/robotjtech/public_html/robotjmedia.com/sitemap.xml';
-$robots = '/home/robotjtech/public_html/robotjmedia.com/robots.txt';
+$saveas = '~/public_html/sitemap.xml';
+$robots = '~/public_html/robots.txt';
 $sitemapURL = $protocol.'://'.$domain.'/sitemap.xml';
 
 // ------------ End of configuration ----------------------
